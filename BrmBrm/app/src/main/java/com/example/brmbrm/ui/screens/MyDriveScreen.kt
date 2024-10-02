@@ -138,7 +138,7 @@ fun MyDriveScreen(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
                         contentColor = Color.White
-                )
+                    )
                 ) {
                     Text(text = "Show Route")
                 }
@@ -153,10 +153,12 @@ fun MyDriveScreen(
                                 .addOnSuccessListener { querySnapshot ->
                                     if (!querySnapshot.isEmpty) {
                                         val driveDocument = querySnapshot.documents[0].reference
+                                        Log.d("MyDriveScreen", "Drive found for username: $username")
 
                                         // Ažuriraj status vožnje na 0 (završena vožnja)
                                         driveDocument.update("status", 0).addOnSuccessListener {
                                             // Dodeli poene vozaču
+                                            Log.d("MyDriveScreen", "Drive status successfully updated to 0")
                                             val userPoints = firestore.collection("users").document(currentUser!!.uid)
                                             userPoints.get().addOnSuccessListener { userDoc ->
                                                 val currentPoints = userDoc.getLong("points") ?: 0

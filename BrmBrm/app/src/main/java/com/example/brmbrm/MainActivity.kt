@@ -1,40 +1,101 @@
 package com.example.brmbrm
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.brmbrm.ui.screens.LoginScreen
-import com.example.brmbrm.ui.screens.RegisterScreen
-import com.example.brmbrm.ui.screens.HomeScreen
-import com.example.brmbrm.ui.screens.ProfileScreen
-import com.example.brmbrm.ui.screens.CreateDriveScreen
-import com.example.brmbrm.ui.screens.MapScreen
+import com.example.brmbrm.services.LocationService
+import com.example.brmbrm.ui.screens.*
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.FirebaseApp
-import com.example.brmbrm.ui.screens.DriveDetailsScreen
-import com.example.brmbrm.ui.screens.MyDriveScreen
-import com.example.brmbrm.ui.screens.ShowRouteScreen
-
-
 
 class MainActivity : ComponentActivity() {
+
+    // Permission launchers
+    private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Firebase
         FirebaseApp.initializeApp(this)
 
-        setContent {
-            setContent {
+        // Register notification permission launcher for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher =
+                registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                    if (!granted) {
+                        Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        }
 
-                MyApp()
+        // Register location permission launcher
+        locationPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
+                if (!granted) {
+                    Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show()
+                } else {
+                    startLocationService()
+                }
             }
+
+        // Check for and request permissions on create
+        requestPermissions()
+
+        // Set content for navigation
+        setContent {
+            MyApp()
         }
     }
+
+    // Request necessary permissions
+    private fun requestPermissions() {
+        // Check location permissions
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+
+        // Check notification permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    // Start the location service when permissions are granted
+    private fun startLocationService() {
+        val intent = Intent(this, LocationService::class.java)
+        startService(intent)
+    }
 }
+
+// Navigation setup in MyApp
 @Composable
 fun MyApp() {
     val navController = rememberNavController()
@@ -46,7 +107,6 @@ fun MyApp() {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
-
                     navController.navigate("home_screen") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -66,6 +126,9 @@ fun MyApp() {
                 }
             )
         }
+        composable("leaderboard") {
+            LeaderBoardScreen(navController)
+        }
         composable("home_screen") {
             HomeScreen(
                 onProfileClick = {
@@ -78,10 +141,12 @@ fun MyApp() {
                     navController.navigate("my_drive")
                 },
                 onMapClick = { latitude, longitude ->
-                    navController.navigate("map/$latitude/$longitude") // Navigate using dynamic location
+                    navController.navigate("map/$latitude/$longitude")
+                },
+                onLeaderboardClick = {
+                    navController.navigate("leaderboard")
                 },
                 onLogoutClick = {
-                    // Navigate back to login screen and remove home screen from back stack
                     navController.navigate("login") {
                         popUpTo("home_screen") { inclusive = true }
                     }
@@ -105,8 +170,6 @@ fun MyApp() {
         composable("route_screen") {
             ShowRouteScreen(navController)
         }
-
-
         composable("drive_details/{username}/{carModel}/{destination}/{departureTime}/{availableSeats}/{price}") { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: "Unknown"
             val carModel = backStackEntry.arguments?.getString("carModel") ?: "Unknown"
@@ -125,7 +188,5 @@ fun MyApp() {
                 price = price
             )
         }
-
     }
 }
-
