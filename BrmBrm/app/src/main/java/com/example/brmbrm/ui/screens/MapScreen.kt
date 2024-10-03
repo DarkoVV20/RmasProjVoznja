@@ -1,8 +1,12 @@
 package com.example.brmbrm.ui.screens
 
-import androidx.compose.foundation.layout.fillMaxSize
+import android.location.Location
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.GoogleMap
@@ -21,49 +25,76 @@ fun MapScreen(navController: NavController, latitude: Double, longitude: Double)
         position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
     }
 
-    // Initialize Firestore and store drive data
+
     val firestore = FirebaseFirestore.getInstance()
     var driveLocations by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch drives from Firestore
+
+    var radius by remember { mutableStateOf(10f) } // Default to 10 km
+
+
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             try {
                 val drivesSnapshot = firestore.collection("drives").whereEqualTo("status", 1).get().await()
                 driveLocations = drivesSnapshot.documents.mapNotNull { it.data }
             } catch (e: Exception) {
-                // Handle error (e.g., show a message)
+
             }
         }
     }
 
-    GoogleMap(
-        modifier = Modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState
-    ) {
-        // Add a marker for the user's current location
-        Marker(
-            state = MarkerState(position = currentLocation),
-            title = "Current Location",
-            snippet = "You are here"
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        Text("Search radius: ${radius.toInt()} km", modifier = Modifier.padding(16.dp))
+        Slider(
+            value = radius,
+            onValueChange = { radius = it },
+            valueRange = 1f..100f,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        // Add markers for each drive retrieved from Firestore
-        for (drive in driveLocations) {
-            val driveLatLng = LatLng(drive["latitude"] as Double, drive["longitude"] as Double)
+
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
+        ) {
+
             Marker(
-                state = MarkerState(position = driveLatLng),
-                title = drive["carModel"] as String,
-                snippet = "Destination: ${drive["destination"]}",
-                onClick = {
-                    navController.navigate(
-                        "drive_details/${drive["username"]}/${drive["carModel"]}/${drive["destination"]}/${drive["departureTime"]}/${drive["availableSeats"]}/${drive["price"]}"
-                    )
-                    true // Return true to indicate the click was handled
-                }
+                state = MarkerState(position = currentLocation),
+                title = "Current Location",
+                snippet = "You are here"
             )
 
+
+            for (drive in driveLocations) {
+                val driveLatLng = LatLng(drive["latitude"] as Double, drive["longitude"] as Double)
+
+
+                val results = FloatArray(1)
+                Location.distanceBetween(
+                    latitude, longitude,
+                    driveLatLng.latitude, driveLatLng.longitude,
+                    results
+                )
+                val distanceInKm = results[0] / 1000
+
+
+                if (distanceInKm <= radius) {
+                    Marker(
+                        state = MarkerState(position = driveLatLng),
+                        title = drive["carModel"] as String,
+                        snippet = "Destination: ${drive["destination"]}",
+                        onClick = {
+                            navController.navigate(
+                                "drive_details/${drive["username"]}/${drive["carModel"]}/${drive["destination"]}/${drive["departureTime"]}/${drive["availableSeats"]}/${drive["price"]}"
+                            )
+                            true
+                        }
+                    )
+                }
+            }
         }
     }
 }

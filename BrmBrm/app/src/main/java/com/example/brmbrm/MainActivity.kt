@@ -23,17 +23,17 @@ import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
 
-    // Permission launchers
+
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize Firebase
+
         FirebaseApp.initializeApp(this)
 
-        // Register notification permission launcher for Android 13+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notificationPermissionLauncher =
                 registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
                 }
         }
 
-        // Register location permission launcher
+
         locationPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
                 val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true
@@ -54,18 +54,18 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-        // Check for and request permissions on create
+
         requestPermissions()
 
-        // Set content for navigation
+
         setContent {
             MyApp()
         }
     }
 
-    // Request necessary permissions
+
     private fun requestPermissions() {
-        // Check location permissions
+
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-        // Check notification permission for Android 13+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
                 this, Manifest.permission.POST_NOTIFICATIONS
@@ -88,14 +88,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Start the location service when permissions are granted
+
     private fun startLocationService() {
         val intent = Intent(this, LocationService::class.java)
         startService(intent)
     }
 }
 
-// Navigation setup in MyApp
+
 @Composable
 fun MyApp() {
     val navController = rememberNavController()

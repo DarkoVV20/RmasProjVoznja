@@ -26,7 +26,7 @@ fun LeaderBoardScreen(navController: NavHostController) {
     var users by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var backgroundImageUrl by remember { mutableStateOf<String?>(null) }
 
-    // Fetch top 10 users by points
+
     LaunchedEffect(Unit) {
         backgroundImageUrl = firebaseStorage.reference.child("background.jpg").downloadUrl.await().toString()
         firestore.collection("users")
@@ -37,7 +37,7 @@ fun LeaderBoardScreen(navController: NavHostController) {
                 users = result.documents.map { doc -> doc.data ?: emptyMap() }
             }
             .addOnFailureListener {
-                // Handle failure (e.g., show a toast or log the error)
+
             }
     }
 
@@ -47,7 +47,7 @@ fun LeaderBoardScreen(navController: NavHostController) {
                 model = it,
                 contentDescription = "Background Image",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize() // Fill the whole screen with background image
+                modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -62,7 +62,7 @@ fun LeaderBoardScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Display users in the leaderboard
+
             users.forEachIndexed { index, user ->
                 val username = user["username"] as? String ?: "Unknown"
                 val points = user["points"] as? Long ?: 0
@@ -75,7 +75,7 @@ fun LeaderBoardScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Button to return to HomeScreen
+
             Button(
                 onClick = { navController.popBackStack() },
                 colors = ButtonDefaults.buttonColors(

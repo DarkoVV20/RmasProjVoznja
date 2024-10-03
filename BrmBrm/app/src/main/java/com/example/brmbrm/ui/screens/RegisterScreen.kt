@@ -32,7 +32,7 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onBackToLoginClick: () -> Unit
 ) {
-    // Existing state variables
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -40,7 +40,7 @@ fun RegisterScreen(
     var selectedImageUri by remember { mutableStateOf<String?>(null) }
     var imageUrl by remember { mutableStateOf<String?>(null) }
 
-    // New state variables for additional fields
+
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -65,7 +65,7 @@ fun RegisterScreen(
         }
     }
 
-    // Scroll state for the form
+
     val scrollState = rememberScrollState()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -78,13 +78,13 @@ fun RegisterScreen(
             )
         }
 
-        // Add verticalScroll modifier to enable scrolling
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
                 .background(Color(0xB3000000), shape = RoundedCornerShape(8.dp))
-                .verticalScroll(scrollState), // This enables vertical scrolling
+                .verticalScroll(scrollState),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

@@ -29,8 +29,14 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
-import com.example.brmbrm.services.LocationService// Import your LocationService
+import com.example.brmbrm.services.LocationService
 import android.app.ActivityManager
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.example.brmbrm.R
 
 fun isLocationServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -61,7 +67,7 @@ fun HomeScreen(
     var locationGranted by remember { mutableStateOf(false) }
     var lastKnownLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
-    // Permission launcher to request location permissions
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -70,19 +76,18 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         try {
-            // Fetching background image
+
             backgroundImageUrl =
                 firebaseStorage.reference.child("background.jpg").downloadUrl.await().toString()
-            // Fetching user profile image
+
             userImageUrl =
-                firebaseStorage.reference.child("profile_pictures/${currentUser?.uid}.jpg").downloadUrl.await()
-                    .toString()
+                firebaseStorage.reference.child("profile_pictures/${currentUser?.uid}.jpg").downloadUrl.await().toString()
         } catch (e: Exception) {
-            // Handle errors (image not found, etc.)
+
         }
     }
 
-    // Function to get the device's location
+
     fun requestLocation() {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
             == PackageManager.PERMISSION_GRANTED
@@ -94,7 +99,7 @@ fun HomeScreen(
                     onMapClick(
                         location.latitude,
                         location.longitude
-                    ) // Navigate with actual coordinates
+                    )
                 } else {
                     Toast.makeText(context, "Unable to fetch location", Toast.LENGTH_LONG).show()
                 }
@@ -109,7 +114,7 @@ fun HomeScreen(
         }
     }
 
-    // State for tracking service status based on real service state
+
     var isServiceRunning by remember {
         mutableStateOf(
             isLocationServiceRunning(
@@ -119,7 +124,7 @@ fun HomeScreen(
         )
     }
 
-    // Function to start the LocationService
+
     fun startLocationService() {
         val intent = Intent(context, LocationService::class.java)
         ContextCompat.startForegroundService(context, intent)
@@ -127,7 +132,7 @@ fun HomeScreen(
         isServiceRunning = true
     }
 
-    // Function to stop the LocationService
+
     fun stopLocationService() {
         val intent = Intent(context, LocationService::class.java)
         context.stopService(intent)
@@ -136,15 +141,24 @@ fun HomeScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Setting background image
+
         backgroundImageUrl?.let {
             AsyncImage(
                 model = it,
                 contentDescription = "Background Image",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize() // Fill the whole screen with background image
+                modifier = Modifier.fillMaxSize()
             )
         }
+        Text(
+            text = "Welcome to BrmBrm!",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Red,
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.TopCenter)
+        )
 
         Column(
             modifier = Modifier
@@ -191,9 +205,9 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // New Leaderboard Button
+
             Button(
-                onClick = { onLeaderboardClick() }, // Navigate to Leaderboard screen
+                onClick = { onLeaderboardClick() },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
@@ -203,7 +217,7 @@ fun HomeScreen(
                 Text(text = "Leaderboard")
             }
 
-            // Button to toggle the LocationService
+
             Button(
                 onClick = {
                     if (isServiceRunning) {
@@ -223,25 +237,25 @@ fun HomeScreen(
 
         }
 
-        // Profile Button with User Image
+
         Button(
             onClick = { onProfileClick() },
-            modifier = Modifier
-                .size(80.dp)
-                .padding(16.dp)
-                .align(Alignment.TopStart)
+            modifier = Modifier.size(70.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent
+            ),
+            shape = CircleShape
         ) {
-            userImageUrl?.let {
-                AsyncImage(
-                    model = it,
-                    contentDescription = "Profile Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            Image(
+                painter = painterResource(id = R.drawable.profile),
+                contentDescription = "Profile Button Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(54.dp)
+            )
         }
 
-        // Logout button at the bottom
+
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)

@@ -49,7 +49,7 @@ fun ProfileScreen(navController: NavController) {
     var phoneNumber by remember { mutableStateOf(TextFieldValue("")) }
     var yearOfBirth by remember { mutableStateOf(TextFieldValue("")) }
     var profileImageUrl by remember { mutableStateOf<String?>(null) }
-    var backgroundImageUrl by remember { mutableStateOf<String?>(null) } // Background image URL
+    var backgroundImageUrl by remember { mutableStateOf<String?>(null) }
 
     val defaultProfileImageUrl = "default.png"
 
@@ -62,13 +62,13 @@ fun ProfileScreen(navController: NavController) {
     }
 
 
-    // Učitavanje podataka korisnika i pozadinske slike
+
     LaunchedEffect(Unit) {
         if (currentUser == null) {
             Toast.makeText(context, "User not found. Please log in.", Toast.LENGTH_LONG).show()
             navController.navigate("login")
         } else {
-            val userId = currentUser.uid // Declare userId here
+            val userId = currentUser.uid
             try {
                 val userDoc = firestore.collection("users").document(userId).get().await()
                 if (userDoc.exists()) {
@@ -79,20 +79,20 @@ fun ProfileScreen(navController: NavController) {
                     phoneNumber = TextFieldValue(userDoc.getString("phoneNumber") ?: "")
                     yearOfBirth = TextFieldValue(userDoc.getString("yearOfBirth") ?: "")
 
-                    // Load profile image
+
                     val profileImageRef = firebaseStorage.reference.child("profile_pictures/$userId.jpg")
                     profileImageUrl = try {
                         profileImageRef.downloadUrl.await().toString()
                     } catch (e: Exception) {
-                        defaultProfileImageUrl // Use default if not found
+                        defaultProfileImageUrl
                     }
 
-                    // Load background image
+
                     val backgroundRef = firebaseStorage.reference.child("background.jpg")
                     backgroundImageUrl = try {
                         backgroundRef.downloadUrl.await().toString()
                     } catch (e: Exception) {
-                        // Handle background image not found error if needed
+
                         null
                     }
                 } else {
@@ -105,7 +105,7 @@ fun ProfileScreen(navController: NavController) {
     }
     val scrollState = rememberScrollState()
 
-    // UI prikaz
+
     Box(modifier = Modifier.fillMaxSize()) {
         backgroundImageUrl?.let {
             AsyncImage(
@@ -129,7 +129,7 @@ fun ProfileScreen(navController: NavController) {
                 text = "Your Profile",
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.Red,
-                modifier = Modifier.padding(bottom = 16.dp) // Padding for the title
+                modifier = Modifier.padding(bottom = 16.dp)
             )
             profileImageUrl?.let {
                 Image(
@@ -147,7 +147,7 @@ fun ProfileScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // TextField za email
+
             OutlinedTextField(
                 value = email,
                 onValueChange = { if (isEditing) email = it },

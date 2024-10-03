@@ -3,7 +3,6 @@ package com.example.brmbrm.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -13,7 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -41,11 +39,14 @@ fun DriveDetailsScreen(
     val currentUser = firebaseAuth.currentUser
     var availableSeatsInt = availableSeats.toInt()
 
-    // Background image URL
+
     var backgroundImageUrl by remember { mutableStateOf<String?>(null) }
     val firebaseStorage = com.google.firebase.storage.FirebaseStorage.getInstance()
 
-    // Load background image
+
+    var phoneNumber by remember { mutableStateOf<String?>(null) }
+
+
     LaunchedEffect(Unit) {
         val backgroundRef = firebaseStorage.reference.child("background.jpg")
         backgroundImageUrl = try {
@@ -53,12 +54,29 @@ fun DriveDetailsScreen(
         } catch (e: Exception) {
             null
         }
+
+
+        try {
+            val querySnapshot = firestore.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .await()
+
+            if (!querySnapshot.isEmpty) {
+                val userDoc = querySnapshot.documents[0]
+                phoneNumber = userDoc.getString("phoneNumber")
+            } else {
+                Toast.makeText(context, "User not found for the drive.", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error fetching user details: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     val scrollState = rememberScrollState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Set the background image
+
         backgroundImageUrl?.let {
             AsyncImage(
                 model = it,
@@ -77,7 +95,7 @@ fun DriveDetailsScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Title
+
             Text(
                 text = "Drive Details",
                 style = MaterialTheme.typography.titleLarge,
@@ -85,7 +103,7 @@ fun DriveDetailsScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Display drive details
+
             Text(text = "Username: $username", color = Color.White)
             Text(text = "Car Model: $carModel", color = Color.White)
             Text(text = "Destination: $destination", color = Color.White)
@@ -93,11 +111,16 @@ fun DriveDetailsScreen(
             Text(text = "Available Seats: $availableSeats", color = Color.White)
             Text(text = "Price: $price", color = Color.White)
 
-            // Display button to book if seats are available
+
+            phoneNumber?.let {
+                Text(text = "Users Phone Number: $it", color = Color.White)
+            }
+
+
             if (availableSeatsInt > 0 && currentUser != null) {
                 Button(
                     onClick = {
-                        // Update Firestore to book the drive
+
                         firestore.collection("drives")
                             .whereEqualTo("username", username)
                             .whereEqualTo("carModel", carModel)
@@ -142,4 +165,3 @@ fun DriveDetailsScreen(
         }
     }
 }
-

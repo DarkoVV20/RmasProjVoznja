@@ -67,7 +67,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Username input
+
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
@@ -86,7 +86,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Password input
+
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -106,22 +106,19 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Login Button
+
             Button(
                 onClick = {
-                    // Log za proveru unosa korisničkog imena
-                    Toast.makeText(context, "Searching for username: $username", Toast.LENGTH_LONG).show()
 
-                    // Firestore query for username
                     firestore.collection("users")
                         .whereEqualTo("username", username)
                         .get()
                         .addOnSuccessListener { documents ->
                             if (!documents.isEmpty) {
-                                Toast.makeText(context, "Found ${documents.size()} user(s) with username", Toast.LENGTH_LONG).show()
+
                                 val email = documents.first().getString("email")
                                 if (email != null) {
-                                    Toast.makeText(context, "Found email: $email", Toast.LENGTH_LONG).show()
+
                                     firebaseAuth.signInWithEmailAndPassword(email, password)
                                         .addOnCompleteListener { task ->
                                             if (task.isSuccessful) {
@@ -157,7 +154,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Register Button
+
             TextButton(
                 onClick = { onRegisterClick() },
                 modifier = Modifier.fillMaxWidth()

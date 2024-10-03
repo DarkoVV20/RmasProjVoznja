@@ -41,7 +41,7 @@ class LocationService : Service() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
                     sendLocationToServer(location)
-                    // Proveri obližnje drives nakon što pošalješ lokaciju
+
                     checkForNearbyDrives(location)
                 }
             }
@@ -93,7 +93,7 @@ class LocationService : Service() {
     private fun startLocationUpdates() {
         if (checkLocationPermission()) {
             val locationRequest = LocationRequest.create().apply {
-                interval = 10000 // 10 seconds
+                interval = 15000
                 fastestInterval = 5000
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
             }
@@ -109,7 +109,7 @@ class LocationService : Service() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    // Method to send location to the server
+
     private fun sendLocationToServer(location: Location) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val userId = currentUser?.uid ?: "unknown_user"
@@ -131,7 +131,7 @@ class LocationService : Service() {
             }
     }
 
-    // Proveri obližnje drives
+
     private fun checkForNearbyDrives(location: Location) {
         val userLocation = Pair(location.latitude, location.longitude)
 
@@ -145,10 +145,10 @@ class LocationService : Service() {
                         document.getDouble("longitude") ?: 0.0
                     )
 
-                    // Proveri udaljenost između trenutne korisnikove lokacije i lokacije drive-a
+
                     val distance = calculateDistance(userLocation, driveLocation)
 
-                    if (distance < 1000) { // Ukoliko je udaljenost manja od 1km
+                    if (distance < 1000) {
                         showNotification("Nearby Drive", "A drive is happening near you!")
                         break
                     }
@@ -156,14 +156,14 @@ class LocationService : Service() {
             }
     }
 
-    // Metoda za izračunavanje udaljenosti između dve lokacije
+
     private fun calculateDistance(loc1: Pair<Double, Double>, loc2: Pair<Double, Double>): Float {
         val result = FloatArray(1)
         Location.distanceBetween(loc1.first, loc1.second, loc2.first, loc2.second, result)
         return result[0]
     }
 
-    // Show a notification when a nearby object is detected
+
     private fun showNotification(title: String, message: String) {
         val channelId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel()

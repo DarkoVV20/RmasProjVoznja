@@ -29,7 +29,7 @@ fun ShowRouteScreen(navController: NavController) {
         position = CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 15f)
     }
 
-    // Fetch current location
+
     LaunchedEffect(Unit) {
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
@@ -46,22 +46,22 @@ fun ShowRouteScreen(navController: NavController) {
             destination = latLng
         }
     ) {
-        // Marker for current location
+
         currentLocation?.let {
             Marker(state = MarkerState(position = it), title = "You are here")
         }
 
-        // Marker for destination
+
         destination?.let {
             Marker(state = MarkerState(position = it), title = "Destination")
         }
 
-        // Draw a line (polyline) between current location and destination
+
         currentLocation?.let { currentLatLng ->
             destination?.let { destLatLng ->
                 Polyline(
                     points = listOf(currentLatLng, destLatLng),
-                    color = Color.Blue, // Use Compose Color directly
+                    color = Color.Blue,
                     width = 10f
                 )
             }

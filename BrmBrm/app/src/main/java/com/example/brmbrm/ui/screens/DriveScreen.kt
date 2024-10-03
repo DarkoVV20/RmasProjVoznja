@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("MissingPermission") // Make sure to check runtime permissions!
+@SuppressLint("MissingPermission")
 @Composable
 fun CreateDriveScreen(navController: NavController) {
     var carModel by remember { mutableStateOf(TextFieldValue("")) }
@@ -50,19 +50,19 @@ fun CreateDriveScreen(navController: NavController) {
     val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     val coroutineScope = rememberCoroutineScope()
 
-    // Load background image
+
     LaunchedEffect(Unit) {
         try {
             val backgroundRef = firebaseStorage.reference.child("background.jpg")
             backgroundImageUrl = backgroundRef.downloadUrl.await().toString()
         } catch (e: Exception) {
-            // Handle background image not found
+
         }
     }
     if (currentUser == null) {
         LaunchedEffect(Unit) {
             Toast.makeText(context, "Please log in first.", Toast.LENGTH_LONG).show()
-            navController.navigate("login") // Redirect to login screen if user is not logged in
+            navController.navigate("login")
         }
         return
     }
@@ -180,14 +180,14 @@ fun CreateDriveScreen(navController: NavController) {
 
 
 
-                        // Dohvatanje korisničkog imena iz Firestore-a
+
                         val userId = currentUser.uid
                         val userDoc = firestore.collection("users").document(userId).get().await()
 
                         if (userDoc.exists()) {
                             val username = userDoc.getString("username") ?: "Unknown User"
 
-                            // Log the username value
+
                             println("Username to be saved: $username")
 
                             // Kreiranje podatka za vožnju
@@ -203,7 +203,7 @@ fun CreateDriveScreen(navController: NavController) {
                                 "status" to 1
                             )
 
-                            // Čuvanje podataka u Firestore
+
                             firestore.collection("drives")
                                 .add(driveData)
                                 .addOnSuccessListener {
