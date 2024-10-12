@@ -144,9 +144,7 @@ fun MyDriveScreen(
                 }
                 Button(
                     onClick = {
-
                         if (driveData != null) {
-
                             val driveRef = firestore.collection("drives")
                                 .whereEqualTo("username", username)
                                 .get()
@@ -156,15 +154,16 @@ fun MyDriveScreen(
                                         Log.d("MyDriveScreen", "Drive found for username: $username")
 
 
-                                        driveDocument.update("status", 0).addOnSuccessListener {
+                                        driveDocument.delete().addOnSuccessListener {
 
-                                            Log.d("MyDriveScreen", "Drive status successfully updated to 0")
+                                            Log.d("MyDriveScreen", "Drive successfully deleted")
+
+
                                             val userPoints = firestore.collection("users").document(currentUser!!.uid)
                                             userPoints.get().addOnSuccessListener { userDoc ->
                                                 val currentPoints = userDoc.getLong("points") ?: 0
                                                 userPoints.update("points", currentPoints + 100)
                                             }
-
 
                                             val bookedUsersIds = driveData?.get("bookedUsers") as? List<String> ?: emptyList()
                                             bookedUsersIds.forEach { userId ->
@@ -174,10 +173,11 @@ fun MyDriveScreen(
                                                 }
                                             }
 
-                                            Toast.makeText(context, "Drive ended successfully!", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "Drive ended and deleted successfully!", Toast.LENGTH_LONG).show()
                                             navController.popBackStack()
+
                                         }.addOnFailureListener { e ->
-                                            Toast.makeText(context, "Error ending drive: ${e.message}", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "Error deleting drive: ${e.message}", Toast.LENGTH_LONG).show()
                                         }
                                     } else {
                                         Toast.makeText(context, "No drive found for the current user.", Toast.LENGTH_LONG).show()
@@ -195,6 +195,7 @@ fun MyDriveScreen(
                 ) {
                     Text(text = "End Drive")
                 }
+
             }
         } else {
             Text(text = "Loading your drive details...", color = Color.White, modifier = Modifier.align(Alignment.Center))
